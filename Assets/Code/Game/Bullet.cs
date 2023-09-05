@@ -8,8 +8,11 @@ namespace Code.Game
 	public class Bullet : MonoBehaviour
 	{
 		private float damage;
+		private float infectionRadius;
+
 		private Rigidbody cachedRigidbody;
 		
+		public float InfectionRadius => infectionRadius;
 		public float Damage => damage;
 		
 		private void Awake()
@@ -17,17 +20,18 @@ namespace Code.Game
 			cachedRigidbody = GetComponent<Rigidbody>();
 		}
 		
-		/// <summary>
 		/// Configures the bullet with attributes appropriate for a player's bullet.
 		/// </summary>
 		/// <param name="speed">The speed at which the bullet moves forward.</param>
 		/// <param name="damage">The damage this bullet can inflict.</param>
-		public void SetupPlayerBullet(float speed, float damage)
+		/// <param name="infectionRadius">The radius within which the bullet can infect enemies.</param>
+		public void SetupPlayerBullet(float speed, float damage, float infectionRadius)
 		{
 			gameObject.layer = LayerMask.NameToLayer("PlayerBullet");
 			GetComponent<Renderer>().material.color = Color.black;
 			cachedRigidbody.velocity = Vector3.forward * speed;
 			this.damage = damage;
+			this.infectionRadius = infectionRadius;
 		}
 		
 		/// <summary>

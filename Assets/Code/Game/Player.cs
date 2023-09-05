@@ -26,16 +26,7 @@ namespace Code.Game
 		private void Update()
 		{
 			playerControlHandler.HandleTouchInputs();
-
-			if (playerControlHandler.CurrentMoveDirection == MoveDirection.Left)
-			{
-                MoveLeft();
-			}
-			else if (playerControlHandler.CurrentMoveDirection == MoveDirection.Right)
-			{
-				MoveRight();	
-			}
-
+			
 			if (playerControlHandler.IsShooting)
 			{
 				Shoot();
@@ -46,10 +37,19 @@ namespace Code.Game
 		{
 			this.model = model;
 			model.die += OnModelDie;
+			
+			transform.localScale = Vector3.one * model.InitialSize;
 		}
 		public void TakeDamage(float damage)
 		{
 			model.TakeDamage(damage);
+			
+			UpdatePlayerSize();
+		}
+		
+		private void UpdatePlayerSize()
+		{
+			transform.localScale = Vector3.one * model.CurrentSize;
 		}
 		
 		private void OnModelDie(PlayerModel obj)
@@ -66,7 +66,7 @@ namespace Code.Game
 				bulletGo.layer = LayerMask.NameToLayer("PlayerBullet");
 				var bullet = bulletGo.GetComponent<Bullet>();
 				
-				bullet.SetupPlayerBullet(model.BulletSpeed, model.BulletDamage);
+				bullet.SetupPlayerBullet(model.BulletSpeed, model.BulletDamage, model.GetInfectionRadius());
 				lastTimeShot = Time.timeSinceLevelLoad;
 			}
 		}

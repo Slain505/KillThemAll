@@ -15,6 +15,9 @@ namespace Code.Model
 		public float BulletDamage { get; }
 		public float BulletSpeed { get;}
 		public float BulletCooldown { get; }
+		public float InitialSize { get; private set; } = 1.0f;
+		public float CurrentSize { get; private set; } = 1.0f;
+		public float MinSize { get; private set; } = 0.2f;
 		public int Score { get; private set; }
 		public int HitPoints { get; private set; }
 		
@@ -54,6 +57,21 @@ namespace Code.Model
 		{
 			Score += 1;
 			killedEnemy(this);
+		}
+		
+		public void UpdateSize(float sizeChange)
+		{
+			CurrentSize = Mathf.Max(InitialSize - sizeChange, MinSize);
+		}
+        
+		public void ResetSize()
+		{
+			CurrentSize = InitialSize;
+		}
+        
+		public float GetInfectionRadius()
+		{
+			return Mathf.Max(0.1f, InitialSize - CurrentSize);
 		}
 	}
 }
