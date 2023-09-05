@@ -15,8 +15,10 @@ namespace Code.Game
         [SerializeField] private PlayerConfig playerConfig;
         [SerializeField] private SpawnerConfig spawnerConfig;
         [SerializeField] private GameObject playerPrefab;
+        [SerializeField] private GameObject doorPrefab;
         [SerializeField] private Transform playerSpawnPoint;
         [SerializeField] private Transform enemySpawnPoint;
+        [SerializeField] private Transform doorSpawnPoint;
 
         private ObjectPool enemyPool;
         private Player player;
@@ -27,6 +29,7 @@ namespace Code.Game
             Debug.Log("Start gameplay called.");
 
             SpawnPlayer();
+            SpawnDoor();
 
             var topBar = Code.Game.Game.Get<PopupManager>().Get<TopBar>();
             topBar.Setup(player.Model);
@@ -74,6 +77,14 @@ namespace Code.Game
 
             player.onDie -= HandlePlayerDeath;
             player.onDie += HandlePlayerDeath;
+        }
+
+        private void SpawnDoor()
+        {
+            Debug.Log("Spawn door called.");
+
+            var doorGo = Instantiate(doorPrefab, doorSpawnPoint.position, Quaternion.identity, transform);
+            
         }
 
         private void SpawnEnemy()
