@@ -4,7 +4,7 @@ using UnityEngine;
 
 namespace Code.Game
 {
-    public class BallController
+    public class BallController : MonoBehaviour
     {
         [SerializeField] private GameObject mainBall;
         [SerializeField] private GameObject childBallPrefab;

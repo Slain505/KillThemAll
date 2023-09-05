@@ -57,20 +57,6 @@ namespace Code.Game
 			onDie(this);
 		}
 
-		private void MoveLeft()
-		{
-			var pos = transform.position;
-			pos.x -= model.Speed * Time.deltaTime;
-			transform.position = pos;
-		}
-
-		private void MoveRight()
-		{
-			var pos = transform.position;
-			pos.x += model.Speed * Time.deltaTime;
-			transform.position = pos;
-		}
-
 		private void Shoot()
 		{
 			if (lastTimeShot + model.BulletCooldown <= Time.timeSinceLevelLoad)
