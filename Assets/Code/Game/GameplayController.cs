@@ -9,44 +9,40 @@ using Random = UnityEngine.Random;
 
 namespace Code.Game
 {
-    /// <summary>
-    /// Controls the main gameplay loop, spawning and managing game entities.
-    /// </summary>
     public class GameplayController : MonoBehaviour
     {
         [SerializeField] private EnemyConfig enemyConfig;
         [SerializeField] private PlayerConfig playerConfig;
         [SerializeField] private SpawnerConfig spawnerConfig;
         [SerializeField] private GameObject playerPrefab;
-        [SerializeField] private GameObject bulletPrefab;
         [SerializeField] private Transform playerSpawnPoint;
         [SerializeField] private Transform enemySpawnPoint;
 
         private ObjectPool enemyPool;
         private Player player;
         private float lastTimeSpawnedEnemy;
-        
+
         private void Start()
         {
             Debug.Log("Start gameplay called.");
-            
+
             SpawnPlayer();
-            
+
             var topBar = Code.Game.Game.Get<PopupManager>().Get<TopBar>();
             topBar.Setup(player.Model);
 
-            if(!Code.Game.Game.Get<PopupManager>().IsOpen<TopBar>())
+            if (!Code.Game.Game.Get<PopupManager>().IsOpen<TopBar>())
             {
                 Code.Game.Game.Get<PopupManager>().Open<TopBar>().Forget();
             }
-            
+
             ReloadScene();
             Time.timeScale = 1;
         }
 
         private void Update()
         {
-            if (player.Model.IsDead())
+            if (player.Model.IsDead()) // Проверьте, нужно ли вам изменить или удалить эту проверку в связи с изменениями в механике смерти игрока
             {
                 return;
             }
@@ -57,28 +53,21 @@ namespace Code.Game
                 SpawnEnemy();
             }
         }
-        
-        /// <summary>
-        /// Reloads the current scene by resetting positions
-        /// and returning all objects to their respective pools.
-        /// </summary>
+
         private void ReloadScene()
         {
             Debug.Log("Scene reload called.");
-            
+
             Code.Game.Game.Get<ObjectPoolsController>().EnemyPool.ReturnAllObjectsToPool();
             Code.Game.Game.Get<ObjectPoolsController>().BulletPool.ReturnAllObjectsToPool();
-            
+
             player.transform.position = playerSpawnPoint.position;
         }
-        
-        /// <summary>
-        /// Spawns the player and sets up related configurations.
-        /// </summary>
+
         private void SpawnPlayer()
         {
             Debug.Log("Spawn player called.");
-            
+
             var playerGo = Instantiate(playerPrefab, playerSpawnPoint.position, Quaternion.identity, transform);
             player = playerGo.GetComponent<Player>();
             player.Setup(new PlayerModel(playerConfig));
@@ -86,14 +75,11 @@ namespace Code.Game
             player.onDie -= HandlePlayerDeath;
             player.onDie += HandlePlayerDeath;
         }
-        
-        /// <summary>
-        /// Spawns an enemy and sets up related configurations.
-        /// </summary>
+
         private void SpawnEnemy()
         {
             Debug.Log("Spawn enemy called.");
-            
+
             var g = Code.Game.Game.Get<ObjectPoolsController>().EnemyPool.GetObject();
             g.transform.position = enemySpawnPoint.transform.position +
                                    new Vector3(
@@ -101,23 +87,18 @@ namespace Code.Game
                                        0, 0);
             var enemy = g.GetComponent<Enemy>();
             enemy.Setup(new EnemyModel(enemyConfig));
-            
-            enemy.onDie -= HandleEnemyDeath;
-            enemy.onDie += HandleEnemyDeath;
+
+            enemy.onInfected -= HandleEnemyInfection; // новый обработчик событий заражения
+            enemy.onInfected += HandleEnemyInfection; // новый обработчик событий заражения
         }
 
-        /// <summary>
-        /// Handles the event when an enemy dies, returns the enemy to the pool, and updates player's score.
-        /// </summary>
-        private void HandleEnemyDeath(Enemy obj)
+        private void HandleEnemyInfection(Enemy obj) // новый обработчик событий заражения
         {
-            Code.Game.Game.Get<ObjectPoolsController>().EnemyPool.ReturnObjectToPool(obj.gameObject);
-            player.Model.KillEnemy();
+            obj.ChangeColor(Color.yellow); // меняем цвет на желтый
+            obj.Explode(); // взрываем врага
+            Code.Game.Game.Get<ObjectPoolsController>().EnemyPool.ReturnObjectToPool(obj.gameObject); // возвращаем объект в пул
         }
 
-        /// <summary>
-        /// Handles the event when the player dies and opens the end game popup.
-        /// </summary>
         private void HandlePlayerDeath(Player playerModel)
         {
             var endPopup = Code.Game.Game.Get<PopupManager>().Get<EndPopup>();

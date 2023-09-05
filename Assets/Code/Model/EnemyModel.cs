@@ -8,7 +8,7 @@ namespace Code.Model
 {
     public class EnemyModel : IModel
     {
-        public event Action<EnemyModel> die = delegate { };
+        public event Action<EnemyModel> Infected = delegate { };
         
         public int MaxHp { get; }
         public float Speed { get; }
@@ -18,6 +18,7 @@ namespace Code.Model
         public float BulletDamage { get; }
         public float ShootInterval { get; }
         private int Hp { get; set; }
+        private bool IsInfected { get; set; }
         
         public EnemyModel(EnemyConfig config)
         {
@@ -40,10 +41,16 @@ namespace Code.Model
             
             Hp = (int) Mathf.Max(0, Hp - damage);
             
-            if(IsDead())
+            if(Hp > 0 && !IsInfected)
             {
-                die(this);
+                Infect();
             }
+        }
+
+        public void Infect()
+        {
+            IsInfected = true;
+            Infected(this);
         }
         
         private bool IsDead()

@@ -10,14 +10,23 @@ namespace Code.Model
 		public event Action<PlayerModel> die = delegate { };
 		public event Action<PlayerModel> killedEnemy = delegate { };
 		public event Action<PlayerModel, float> damageTaken = delegate { };
+
+        // Added new event to handle when player reaches the door
+        public event Action<PlayerModel> reachedDoor = delegate { };
 		
 		public float Speed { get; }
 		public float BulletDamage { get; }
-		public float BulletSpeed { get;}
+		public float BulletSpeed { get; }
 		public float BulletCooldown { get; }
+
+        // Added set access modifier for these properties to allow for size updates
 		public float InitialSize { get; private set; } = 1.0f;
-		public float CurrentSize { get; private set; } = 1.0f;
+		public float CurrentSize { get; set; } = 1.0f;
 		public float MinSize { get; private set; } = 0.2f;
+
+        // Added new property to represent critical minimum size
+        public float CriticalMinimumSize { get; private set; } = 0.1f;
+
 		public int Score { get; private set; }
 		public int HitPoints { get; private set; }
 		
@@ -32,7 +41,7 @@ namespace Code.Model
 		
 		public bool IsDead()
 		{
-			return HitPoints == 0;
+			return HitPoints <= 0;
 		}
 
 		public void TakeDamage(float damage)
@@ -45,12 +54,10 @@ namespace Code.Model
 			HitPoints = (int) Mathf.Max(0, HitPoints - damage);
 			damageTaken(this, damage);
 			
-			if (!IsDead())
+			if (IsDead())
 			{
-				return;
+				die(this);
 			}
-            
-			die(this);
 		}
 
 		public void KillEnemy()
@@ -73,5 +80,11 @@ namespace Code.Model
 		{
 			return Mathf.Max(0.1f, InitialSize - CurrentSize);
 		}
+
+        // Added new method to handle reaching the door
+        public void ReachDoor()
+        {
+            reachedDoor(this);
+        }
 	}
 }

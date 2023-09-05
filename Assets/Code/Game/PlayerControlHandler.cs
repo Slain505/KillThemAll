@@ -8,7 +8,12 @@ namespace Code.Game
     public class PlayerControlHandler
     {
         public bool IsShooting;
+        public float HoldTime { get; private set; }
+        public float ShotPower { get; private set; }
         
+        private float maxHoldTime = 5f;
+        private bool isHolding = false;
+
         public void HandleTouchInputs()
         {
             HandleShootsTouches();
@@ -16,6 +21,8 @@ namespace Code.Game
 
         private void HandleShootsTouches()
         {
+            bool wasShooting = IsShooting;
+            
 #if UNITY_EDITOR
             if (Input.GetMouseButton(0))
             {
@@ -49,13 +56,27 @@ namespace Code.Game
                 }
             }
 #endif
+            
+            if (IsShooting)
+            {
+                if (!wasShooting)
+                {
+                    isHolding = true;
+                    HoldTime = 0f;
+                }
+                
+                if (isHolding)
+                {
+                    HoldTime += Time.deltaTime;
+                    ShotPower = Mathf.Clamp(HoldTime / maxHoldTime, 0f, 1f);
+                }
+            }
+            else if (wasShooting)
+            {
+                isHolding = false;
+            }
         }
 
-        /// <summary>
-        /// Checks if the touch input is centered on the screen.
-        /// </summary>
-        /// <param name="touch">The touch input to check.</param>
-        /// <returns>True if touch is in the center of the screen, false otherwise.</returns>
         private bool TouchDetected(Touch touch)
         {
             return true;
