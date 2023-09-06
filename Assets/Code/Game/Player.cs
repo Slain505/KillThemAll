@@ -18,8 +18,6 @@ namespace Code.Game
         private void Start()
         {
             playerControlHandler = new PlayerControlHandler();
-            
-            model.reachedDoor += OnReachedDoor;
         }
 
         private void Update()
@@ -41,14 +39,6 @@ namespace Code.Game
             {
                 // Trigger lose condition
                 OnModelDie(model);
-            }
-
-            // Check for door proximity and open the door if close enough
-            // (Assuming DoorTransform is a reference to the door's transform component)
-            if(Vector3.Distance(transform.position, DoorTransform.position) <= 5f)
-            {
-                // Open the door
-                // Door.Open();
             }
         }
         
@@ -75,7 +65,6 @@ namespace Code.Game
         private void OnModelDie(PlayerModel obj)
         {
             onDie(this);
-            // Maybe handle player death here
         }
 
         private void Shoot()

@@ -123,6 +123,37 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 23800000, guid: 7c12376926e849d43a8b2d16c5df7915, type: 2}
+--- !u!1 &14091802
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 14091803}
+  m_Layer: 0
+  m_Name: DoorSpawnPoint
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &14091803
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 14091802}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 27.34}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 15322660}
+  m_RootOrder: 2
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &15322658
 GameObject:
   m_ObjectHideFlags: 0
@@ -167,11 +198,12 @@ MonoBehaviour:
     BulletCooldown: 0.5
   spawnerConfig:
     SpawnPosition: {x: -5, y: 5, z: 0}
-    SpawnDelay: 2
+    SpawnDelay: 0
   playerPrefab: {fileID: 5331286619832824820, guid: 4cc1da050a3da8146888027bb658f3bb, type: 3}
-  bulletPrefab: {fileID: 274776011232356594, guid: 7285952f907a4994b8dd530d4610334e, type: 3}
+  doorPrefab: {fileID: 557427036673532311, guid: 791ce2e1773ad4933be84a7cffa2d6ac, type: 3}
   playerSpawnPoint: {fileID: 2084569447}
   enemySpawnPoint: {fileID: 2048468736}
+  doorSpawnPoint: {fileID: 14091803}
 --- !u!4 &15322660
 Transform:
   m_ObjectHideFlags: 0
@@ -186,6 +218,7 @@ Transform:
   m_Children:
   - {fileID: 2084569447}
   - {fileID: 2048468736}
+  - {fileID: 14091803}
   m_Father: {fileID: 0}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}

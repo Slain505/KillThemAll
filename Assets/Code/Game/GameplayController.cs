@@ -22,7 +22,11 @@ namespace Code.Game
 
         private ObjectPool enemyPool;
         private Player player;
+        private Door door;
         private float lastTimeSpawnedEnemy;
+        private int currentEnemyCount = 0;
+        private int maxEnemyCount = 20;
+        private int minEnemyCount = 5;
 
         private void Start()
         {
@@ -50,9 +54,8 @@ namespace Code.Game
                 return;
             }
 
-            if (lastTimeSpawnedEnemy + spawnerConfig.SpawnDelay <= Time.timeSinceLevelLoad)
+            if (maxEnemyCount > currentEnemyCount)
             {
-                lastTimeSpawnedEnemy = Time.timeSinceLevelLoad;
                 SpawnEnemy();
             }
         }
@@ -84,23 +87,35 @@ namespace Code.Game
             Debug.Log("Spawn door called.");
 
             var doorGo = Instantiate(doorPrefab, doorSpawnPoint.position, Quaternion.identity, transform);
-            
+            door = doorGo.GetComponent<Door>();
         }
 
         private void SpawnEnemy()
         {
             Debug.Log("Spawn enemy called.");
 
-            var g = Code.Game.Game.Get<ObjectPoolsController>().EnemyPool.GetObject();
-            g.transform.position = enemySpawnPoint.transform.position +
-                                   new Vector3(
-                                       Random.Range(spawnerConfig.SpawnPosition.x, spawnerConfig.SpawnPosition.y),
-                                       0, 0);
-            var enemy = g.GetComponent<Enemy>();
-            enemy.Setup(new EnemyModel(enemyConfig));
+            var randomEnemyCount = Random.Range(minEnemyCount, maxEnemyCount); // установите min и max в соответствии с вашими требованиями
 
-            enemy.onInfected -= HandleEnemyInfection; // новый обработчик событий заражения
-            enemy.onInfected += HandleEnemyInfection; // новый обработчик событий заражения
+            float spawnAreaWidth = spawnerConfig.SpawnPosition.y - spawnerConfig.SpawnPosition.x;
+            float enemySpacing = 1.0f; // Устанавливает отступ между врагами, измените по вашему усмотрению
+
+            for (int i = 0; i < randomEnemyCount; i++)
+            {
+                var g = Code.Game.Game.Get<ObjectPoolsController>().EnemyPool.GetObject();
+
+                float xPositionOffset = Random.Range(0, spawnAreaWidth - enemySpacing);
+                float zPositionOffset = Random.Range(0, spawnAreaWidth - enemySpacing); // Предполагая, что у вас квадратная зона спавна
+
+                g.transform.position = enemySpawnPoint.transform.position + new Vector3(
+                    spawnerConfig.SpawnPosition.x + xPositionOffset,
+                    0, 
+                    spawnerConfig.SpawnPosition.x + zPositionOffset);
+
+                // Здесь добавляется логика для обеспечения отступа между врагами, если необходимо
+
+                var enemy = g.GetComponent<Enemy>();
+                enemy.Setup(new EnemyModel(enemyConfig));
+            }
         }
 
         private void HandleEnemyInfection(Enemy obj) // новый обработчик событий заражения
