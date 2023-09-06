@@ -35,8 +35,8 @@ namespace Code.Shared
             bulletContainer.transform.SetParent(transform);
             leaderboardContainer.transform.SetParent(transform);
             
-            enemyPool = new ObjectPool(enemyPrefab, 10, enemyContainer.transform);
-            bulletPool = new ObjectPool(bulletPrefab, 50, bulletContainer.transform);
+            enemyPool = new ObjectPool(enemyPrefab, 100, enemyContainer.transform);
+            bulletPool = new ObjectPool(bulletPrefab, 5, bulletContainer.transform);
             leaderboardPool = new ObjectPool(leaderboardPrefab, 10, leaderboardContainer.transform);
             
             Debug.Log("Object pools have been created.");

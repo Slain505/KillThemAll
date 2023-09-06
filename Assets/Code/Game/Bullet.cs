@@ -1,3 +1,4 @@
+using Code.Shared;
 using UnityEngine;
 
 namespace Code.Game
@@ -11,10 +12,7 @@ namespace Code.Game
 		private float infectionRadius;
 
 		private Rigidbody cachedRigidbody;
-		
 		public float InfectionRadius => infectionRadius;
-		public float Damage => damage;
-		
 		private void Awake()
 		{
 			cachedRigidbody = GetComponent<Rigidbody>();
@@ -25,27 +23,18 @@ namespace Code.Game
 		/// <param name="speed">The speed at which the bullet moves forward.</param>
 		/// <param name="damage">The damage this bullet can inflict.</param>
 		/// <param name="infectionRadius">The radius within which the bullet can infect enemies.</param>
-		public void SetupPlayerBullet(float speed, float damage, float infectionRadius, float bulletSize)
+		public void SetupPlayerBullet(float speed, float bulletSize)
 		{
 			gameObject.layer = LayerMask.NameToLayer("PlayerBullet");
 			GetComponent<Renderer>().material.color = Color.yellow;
 			cachedRigidbody.velocity = Vector3.forward * speed;
-			this.damage = damage;
-			this.infectionRadius = infectionRadius;
-			transform.localScale = new Vector3(bulletSize, bulletSize, bulletSize); // Устанавливаем размер пули
+			infectionRadius = bulletSize * 2;
+			transform.localScale = new Vector3(bulletSize, bulletSize, bulletSize);
 		}
-		
-		/// <summary>
-		/// Configures the bullet with attributes appropriate for an enemy's bullet.
-		/// </summary>
-		/// <param name="speed">The speed at which the bullet moves backward.</param>
-		/// <param name="damage">The damage this bullet can inflict.</param>
-		public void SetupEnemyBullet(float speed, float damage)
+
+		private void OnTriggerEnter(Collider other)
 		{
-			gameObject.layer = LayerMask.NameToLayer("EnemyBullet");
-			GetComponent<Renderer>().material.color = Color.yellow;
-			cachedRigidbody.velocity = Vector3.back * speed;
-			this.damage = damage;
+			Game.Get<ObjectPoolsController>().BulletPool.ReturnObjectToPool(gameObject);
 		}
 	}
 }

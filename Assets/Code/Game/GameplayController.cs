@@ -1,10 +1,5 @@
 ﻿using System.Collections.Generic;
-using Code.Model;
 using Code.Shared;
-using Code.UI;
-using Cysharp.Threading.Tasks;
-using Game;
-using Game.Model.Popups;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -12,10 +7,9 @@ namespace Code.Game
 {
     public class GameplayController : MonoBehaviour
     {
-        [SerializeField] private EnemyConfig enemyConfig;
-        [SerializeField] private PlayerConfig playerConfig;
         [SerializeField] private GameObject playerPrefab;
         [SerializeField] private GameObject doorPrefab;
+        [SerializeField] private GameObject roadPrefab;
         [SerializeField] private Transform playerSpawnPoint;
         [SerializeField] private Transform enemySpawnPoint;
         [SerializeField] private Transform doorSpawnPoint;
@@ -23,50 +17,46 @@ namespace Code.Game
         private ObjectPool enemyPool;
         private Player player;
         private Door door;
+        private Road road;
+
+        private RaycastHit hit;
         private int currentEnemyCount = 0;
-        private int maxEnemyCount = 20;
-        private int minEnemyCount = 5;
+        private int maxEnemyCount = 100;
+        private int minEnemyCount = 50;
 
         private void Start()
         {
+            ClearScene();
+            Time.timeScale = 1;
+            
             Debug.Log("Start gameplay called.");
 
             SpawnPlayer();
             SpawnDoor();
-
-            var topBar = Code.Game.Game.Get<PopupManager>().Get<TopBar>();
-            topBar.Setup(player.Model);
-
-            if (!Code.Game.Game.Get<PopupManager>().IsOpen<TopBar>())
-            {
-                Code.Game.Game.Get<PopupManager>().Open<TopBar>().Forget();
-            }
-
-            ReloadScene();
-            Time.timeScale = 1;
-        }
-
-        private void Update()
-        {
-            if (player.Model.IsDead()) // Проверьте, нужно ли вам изменить или удалить эту проверку в связи с изменениями в механике смерти игрока
-            {
-                return;
-            }
-
+            SpawnRoad();
+            
             if (maxEnemyCount >= currentEnemyCount)
             {
                 SpawnEnemy();
             }
         }
 
-        private void ReloadScene()
+        private void Update()
+        {
+           
+        }
+
+        private void ClearScene()
         {
             Debug.Log("Scene reload called.");
 
-            Code.Game.Game.Get<ObjectPoolsController>().EnemyPool.ReturnAllObjectsToPool();
-            Code.Game.Game.Get<ObjectPoolsController>().BulletPool.ReturnAllObjectsToPool();
+            Game.Get<ObjectPoolsController>().EnemyPool.ReturnAllObjectsToPool();
+            Game.Get<ObjectPoolsController>().BulletPool.ReturnAllObjectsToPool();
 
-            player.transform.position = playerSpawnPoint.position;
+            if (player != null)
+            {
+                player.transform.position = playerSpawnPoint.position;
+            }
         }
 
         private void SpawnPlayer()
@@ -74,13 +64,16 @@ namespace Code.Game
             Debug.Log("Spawn player called.");
 
             var playerGo = Instantiate(playerPrefab, playerSpawnPoint.position, Quaternion.identity, transform);
-            playerGo.transform.localScale = new Vector3(playerConfig.InitialSize, playerConfig.InitialSize, playerConfig.InitialSize);
+            
             player = playerGo.GetComponent<Player>();
-            player.Setup(new PlayerModel(playerConfig));
+            //player.Setup(new PlayerModel(playerConfig));
 
             player.onDie -= HandlePlayerDeath;
             player.onDie += HandlePlayerDeath;
+            player.onShoot -= HandlePlayerShoot;
+            player.onShoot += HandlePlayerShoot;
         }
+
 
         private void SpawnDoor()
         {
@@ -98,7 +91,7 @@ namespace Code.Game
             currentEnemyCount += randomEnemyCount;
 
             float spawnAreaWidth = 10.0f; 
-            float enemySpacing = 3.0f; // Увеличиваем значение, чтобы предотвратить перекрытие
+            float enemySpacing = 1.0f; // Увеличиваем значение, чтобы предотвратить перекрытие
 
             List<Vector3> occupiedPositions = new List<Vector3>();
 
@@ -131,7 +124,6 @@ namespace Code.Game
 
                     g.transform.position = spawnPosition;
                     var enemy = g.GetComponent<Enemy>();
-                    enemy.Setup(new EnemyModel(enemyConfig));
                     //g.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
                 }
                 else
@@ -139,6 +131,19 @@ namespace Code.Game
                     Debug.LogWarning("Max attempts reached, enemy not spawned");
                 }
             }
+        }
+
+        private void SpawnRoad()
+        {
+            Debug.Log("Spawn road called.");
+
+            float distance = Vector3.Distance(playerSpawnPoint.position, doorSpawnPoint.position) / 10;
+            Vector3 vectorDirection = (doorSpawnPoint.position - playerSpawnPoint.position);
+            Vector3 middlePoint = playerSpawnPoint.position + vectorDirection / 2;
+            
+            var roadGo = Instantiate(roadPrefab, middlePoint, Quaternion.identity, transform);
+            road = roadGo.GetComponentInChildren<Road>();
+            road.transform.localScale = new Vector3(road.transform.localScale.x, road.transform.localScale.y, distance);
         }
 
         private bool IsPositionOccupied(Vector3 position, List<Vector3> occupiedPositions, float spacing)
@@ -160,12 +165,16 @@ namespace Code.Game
             Code.Game.Game.Get<ObjectPoolsController>().EnemyPool.ReturnObjectToPool(obj.gameObject); // возвращаем объект в пул
         }
 
-        private void HandlePlayerDeath(Player playerModel)
+        private void HandlePlayerDeath(Player obj)
         {
-            var endPopup = Code.Game.Game.Get<PopupManager>().Get<EndPopup>();
-            endPopup.Setup(player.Model);
-            Code.Game.Game.Get<PopupManager>().Open<EndPopup>().Forget();
+            Debug.Log("Player died.");
+            Destroy(obj.gameObject);
             Time.timeScale = 0;
+        }
+        
+        private void HandlePlayerShoot(Player obj)
+        {
+            road.transform.parent.localScale = new Vector3(obj.transform.localScale.x, road.transform.parent.localScale.y, road.transform.parent.localScale.z);
         }
     }
 }

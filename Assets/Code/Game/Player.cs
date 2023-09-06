@@ -1,5 +1,4 @@
 using System;
-using Code.Model;
 using Code.Shared;
 using UnityEngine;
 
@@ -7,96 +6,80 @@ namespace Code.Game
 {
     public class Player : MonoBehaviour
     {
-        public event Action<Player> onDie = delegate { };
+        public event Action<Player> onDie = delegate { }; 
+        public event Action<Player> onShoot = delegate { };
         
-        private PlayerControlHandler playerControlHandler;
-        private PlayerModel model;
         private float lastTimeShot;
-        
-        public PlayerModel Model => model;
-        
+        private float currentSize = 3f;
+        private float maxSize = 5f;
+        private float minSize = 0.1f;
+        private float clickStartTime = 0f;
+
         private void Start()
         {
-            playerControlHandler = new PlayerControlHandler();
+            transform.localScale = Vector3.one * currentSize;
+            onShoot(this);
         }
 
         private void Update()
         {
-            playerControlHandler.HandleTouchInputs();
-            
-            if (playerControlHandler.IsShooting && playerControlHandler.HasReleasedShootButton)
+            if (Input.GetMouseButtonDown(0))
             {
-                Shoot();
+                clickStartTime = Time.realtimeSinceStartup;
             }
-            
-            // Update player size based on hold time (this is just a placeholder, refine as needed)
-            float sizeDecrease = playerControlHandler.HoldTime * 0.1f;
-            model.CurrentSize -= sizeDecrease;
-            UpdatePlayerSize();
+
+            if (Input.GetMouseButtonUp(0))
+            {
+                float timeSinceClickStartTime = Time.realtimeSinceStartup - clickStartTime;
+                if (timeSinceClickStartTime >= 0.3f)
+                {
+                    float sizeDecrease = timeSinceClickStartTime / 5f;
+                    UpdatePlayerSize(sizeDecrease);
+                    Shoot(sizeDecrease);
+                    onShoot(this);
+                }
+            }
+
+            if (Input.GetMouseButton(0))
+            {
+                float timeSinceClickStartTime = Time.realtimeSinceStartup - clickStartTime;
+                float sizeDecrease = timeSinceClickStartTime / 5f;
+                
+                if(currentSize - sizeDecrease <= minSize)
+                {
+                    OnModelDie();
+                }
+            }
 
             // Check if the player size has reached critical minimum size
-            if(model.CurrentSize <= model.CriticalMinimumSize)
+            if(currentSize <= minSize)
             {
-                // Trigger lose condition
-                OnModelDie(model);
+                OnModelDie();
             }
         }
-        
-        public void Setup(PlayerModel model)
+
+        private void UpdatePlayerSize(float sizeDecrease)
         {
-            this.model = model;
-            model.die += OnModelDie;
-            
-            transform.localScale = Vector3.one * model.InitialSize;
+            // Update player size based on hold time (this is just a placeholder, refine as needed)
+            currentSize -= sizeDecrease;
+            currentSize = Mathf.Clamp(currentSize, minSize, maxSize);
+            transform.localScale = Vector3.one * currentSize;
         }
 
-        public void TakeDamage(float damage)
-        {
-            model.TakeDamage(damage);
-            
-            UpdatePlayerSize();
-        }
-        
-        private void UpdatePlayerSize()
-        {
-            transform.localScale = Vector3.one * model.CurrentSize;
-        }
-        
-        private void OnModelDie(PlayerModel obj)
+        private void OnModelDie()
         {
             onDie(this);
         }
 
-        private void Shoot()
+        private void Shoot(float size)
         {
-            if (lastTimeShot + model.BulletCooldown <= Time.timeSinceLevelLoad)
+            if (lastTimeShot <= Time.timeSinceLevelLoad)
             {
-                var bulletGo = Code.Game.Game.Get<ObjectPoolsController>().BulletPool.GetObject();
+                var bulletGo = Game.Get<ObjectPoolsController>().BulletPool.GetObject();
                 bulletGo.transform.position = transform.position;
-                bulletGo.layer = LayerMask.NameToLayer("PlayerBullet");
+
                 var bullet = bulletGo.GetComponent<Bullet>();
-
-                // Используем ShotPower для определения атрибутов пули
-                float shotPower = playerControlHandler.ShotPower;
-                float bulletSize = model.GetBulletSize(shotPower); 
-                float infectionRadius = model.GetInfectionRadius() * shotPower; 
-
-                bullet.SetupPlayerBullet(model.BulletSpeed, model.BulletDamage * shotPower, infectionRadius, bulletSize);
-
-                lastTimeShot = Time.timeSinceLevelLoad;
-
-                // Уменьшаем размер игрока в зависимости от мощности выстрела
-                model.CurrentSize -= shotPower * 0.2f; 
-                UpdatePlayerSize();
-            }
-        }
-
-        private void OnTriggerEnter(Collider other)
-        {
-            if (other.TryGetComponent<Bullet>(out var bullet))
-            {
-                TakeDamage(bullet.Damage);
-                Code.Game.Game.Get<ObjectPoolsController>().BulletPool.ReturnObjectToPool(other.gameObject);
+                bullet.SetupPlayerBullet(5, size);
             }
         }
     }

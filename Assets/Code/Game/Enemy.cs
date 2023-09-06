@@ -1,28 +1,26 @@
-using System;
-using System.Threading;
-using Code.Model;
 using Code.Shared;
-using Cysharp.Threading.Tasks;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
 namespace Code.Game
 {
     public class Enemy : MonoBehaviour
     {
-        public event Action<Enemy> onInfected = delegate { };
-        private EnemyModel model;
 
-        public void Setup(EnemyModel enemyModel)
+        public void Setup()
         {
-            model = enemyModel;
-            model.Infected += HandleInfection;
-            // Инициализируйте другие свойства и события
+            
         }
 
-        private void HandleInfection(EnemyModel enemyModel)
+        private void HandleInfection(float infectionRadius)
         {
-            onInfected(this);
+            var colliders = Physics.OverlapSphere(transform.position, infectionRadius, LayerMask.GetMask("Enemy"));
+            
+            foreach (var collider in colliders)
+            {
+                Game.Get<ObjectPoolsController>().EnemyPool.ReturnObjectToPool(collider.gameObject);
+            }
+            
+            Game.Get<ObjectPoolsController>().EnemyPool.ReturnObjectToPool(gameObject);
         }
 
         public void ChangeColor(Color color)
@@ -33,6 +31,13 @@ namespace Code.Game
         public void Explode()
         {
             
+        }
+        
+        private void OnTriggerEnter(Collider other)
+        {
+            Debug.Log("Enemy collided with " + other.gameObject.name);
+            
+            HandleInfection(other.GetComponent<Bullet>().InfectionRadius);
         }
     }
 }
