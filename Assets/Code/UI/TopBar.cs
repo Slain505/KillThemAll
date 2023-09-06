@@ -31,7 +31,7 @@ namespace Code.UI
 
         private void UpdateUI()
         {
-            playerHealth.text = model.HitPoints.ToString();
+            playerHealth.text = model.CurrentHealth.ToString();
             score.text = model.Score.ToString();
         }
     }

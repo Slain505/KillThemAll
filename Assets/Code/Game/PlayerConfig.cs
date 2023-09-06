@@ -8,5 +8,6 @@ namespace Code.Game
 		public float BulletDamage;
 		public float BulletSpeed;
 		public float BulletCooldown;
+		public float InitialSize;
 	}
 }

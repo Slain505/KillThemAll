@@ -25,13 +25,14 @@ namespace Code.Game
 		/// <param name="speed">The speed at which the bullet moves forward.</param>
 		/// <param name="damage">The damage this bullet can inflict.</param>
 		/// <param name="infectionRadius">The radius within which the bullet can infect enemies.</param>
-		public void SetupPlayerBullet(float speed, float damage, float infectionRadius)
+		public void SetupPlayerBullet(float speed, float damage, float infectionRadius, float bulletSize)
 		{
 			gameObject.layer = LayerMask.NameToLayer("PlayerBullet");
-			GetComponent<Renderer>().material.color = Color.black;
+			GetComponent<Renderer>().material.color = Color.yellow;
 			cachedRigidbody.velocity = Vector3.forward * speed;
 			this.damage = damage;
 			this.infectionRadius = infectionRadius;
+			transform.localScale = new Vector3(bulletSize, bulletSize, bulletSize); // Устанавливаем размер пули
 		}
 		
 		/// <summary>

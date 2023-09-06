@@ -1,4 +1,5 @@
-﻿using Code.Model;
+﻿using System.Collections.Generic;
+using Code.Model;
 using Code.Shared;
 using Code.UI;
 using Cysharp.Threading.Tasks;
@@ -13,7 +14,6 @@ namespace Code.Game
     {
         [SerializeField] private EnemyConfig enemyConfig;
         [SerializeField] private PlayerConfig playerConfig;
-        [SerializeField] private SpawnerConfig spawnerConfig;
         [SerializeField] private GameObject playerPrefab;
         [SerializeField] private GameObject doorPrefab;
         [SerializeField] private Transform playerSpawnPoint;
@@ -23,7 +23,6 @@ namespace Code.Game
         private ObjectPool enemyPool;
         private Player player;
         private Door door;
-        private float lastTimeSpawnedEnemy;
         private int currentEnemyCount = 0;
         private int maxEnemyCount = 20;
         private int minEnemyCount = 5;
@@ -54,7 +53,7 @@ namespace Code.Game
                 return;
             }
 
-            if (maxEnemyCount > currentEnemyCount)
+            if (maxEnemyCount >= currentEnemyCount)
             {
                 SpawnEnemy();
             }
@@ -75,6 +74,7 @@ namespace Code.Game
             Debug.Log("Spawn player called.");
 
             var playerGo = Instantiate(playerPrefab, playerSpawnPoint.position, Quaternion.identity, transform);
+            playerGo.transform.localScale = new Vector3(playerConfig.InitialSize, playerConfig.InitialSize, playerConfig.InitialSize);
             player = playerGo.GetComponent<Player>();
             player.Setup(new PlayerModel(playerConfig));
 
@@ -94,30 +94,65 @@ namespace Code.Game
         {
             Debug.Log("Spawn enemy called.");
 
-            var randomEnemyCount = Random.Range(minEnemyCount, maxEnemyCount); // установите min и max в соответствии с вашими требованиями
+            var randomEnemyCount = Random.Range(minEnemyCount, maxEnemyCount);
+            currentEnemyCount += randomEnemyCount;
 
-            float spawnAreaWidth = spawnerConfig.SpawnPosition.y - spawnerConfig.SpawnPosition.x;
-            float enemySpacing = 1.0f; // Устанавливает отступ между врагами, измените по вашему усмотрению
+            float spawnAreaWidth = 10.0f; 
+            float enemySpacing = 3.0f; // Увеличиваем значение, чтобы предотвратить перекрытие
+
+            List<Vector3> occupiedPositions = new List<Vector3>();
 
             for (int i = 0; i < randomEnemyCount; i++)
             {
-                var g = Code.Game.Game.Get<ObjectPoolsController>().EnemyPool.GetObject();
+                var g = Game.Get<ObjectPoolsController>().EnemyPool.GetObject();
 
-                float xPositionOffset = Random.Range(0, spawnAreaWidth - enemySpacing);
-                float zPositionOffset = Random.Range(0, spawnAreaWidth - enemySpacing); // Предполагая, что у вас квадратная зона спавна
+                Vector3 spawnPosition;
+                int attemptCount = 0;
 
-                g.transform.position = enemySpawnPoint.transform.position + new Vector3(
-                    spawnerConfig.SpawnPosition.x + xPositionOffset,
-                    0, 
-                    spawnerConfig.SpawnPosition.x + zPositionOffset);
+                do
+                {
+                    float xPositionOffset = Random.Range(0, spawnAreaWidth - enemySpacing);
+                    float zPositionOffset = Random.Range(0, spawnAreaWidth - enemySpacing);
 
-                // Здесь добавляется логика для обеспечения отступа между врагами, если необходимо
+                    spawnPosition = enemySpawnPoint.transform.position + new Vector3(xPositionOffset, 0, zPositionOffset);
+                    attemptCount++;
 
-                var enemy = g.GetComponent<Enemy>();
-                enemy.Setup(new EnemyModel(enemyConfig));
+                    if (attemptCount > 500)
+                    {
+                        Debug.LogWarning("Could not find a suitable spawn position");
+                        break;
+                    }
+                }
+                while (IsPositionOccupied(spawnPosition, occupiedPositions, enemySpacing));
+
+                if (attemptCount <= 500)
+                {
+                    occupiedPositions.Add(spawnPosition);
+
+                    g.transform.position = spawnPosition;
+                    var enemy = g.GetComponent<Enemy>();
+                    enemy.Setup(new EnemyModel(enemyConfig));
+                    //g.transform.localScale = new Vector3(1.5f, 1.5f, 1.5f);
+                }
+                else
+                {
+                    Debug.LogWarning("Max attempts reached, enemy not spawned");
+                }
             }
         }
 
+        private bool IsPositionOccupied(Vector3 position, List<Vector3> occupiedPositions, float spacing)
+        {
+            foreach (var occupiedPosition in occupiedPositions)
+            {
+                if (Vector3.Distance(position, occupiedPosition) < spacing)
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+        
         private void HandleEnemyInfection(Enemy obj) // новый обработчик событий заражения
         {
             obj.ChangeColor(Color.yellow); // меняем цвет на желтый

@@ -24,14 +24,14 @@ namespace Code.Game
         {
             playerControlHandler.HandleTouchInputs();
             
-            if (playerControlHandler.IsShooting)
+            if (playerControlHandler.IsShooting && playerControlHandler.HasReleasedShootButton)
             {
                 Shoot();
             }
             
             // Update player size based on hold time (this is just a placeholder, refine as needed)
             float sizeDecrease = playerControlHandler.HoldTime * 0.1f;
-            model.CurrentSize = model.InitialSize - sizeDecrease;
+            model.CurrentSize -= sizeDecrease;
             UpdatePlayerSize();
 
             // Check if the player size has reached critical minimum size
@@ -75,13 +75,18 @@ namespace Code.Game
                 bulletGo.transform.position = transform.position;
                 bulletGo.layer = LayerMask.NameToLayer("PlayerBullet");
                 var bullet = bulletGo.GetComponent<Bullet>();
-                
-                float infectionRadius = model.GetInfectionRadius() * playerControlHandler.ShotPower;
-                bullet.SetupPlayerBullet(model.BulletSpeed, model.BulletDamage, infectionRadius);
+
+                // Используем ShotPower для определения атрибутов пули
+                float shotPower = playerControlHandler.ShotPower;
+                float bulletSize = model.GetBulletSize(shotPower); 
+                float infectionRadius = model.GetInfectionRadius() * shotPower; 
+
+                bullet.SetupPlayerBullet(model.BulletSpeed, model.BulletDamage * shotPower, infectionRadius, bulletSize);
+
                 lastTimeShot = Time.timeSinceLevelLoad;
-                
-                // Reduce the player size based on the shot power (you might need to adjust the multiplier)
-                model.CurrentSize -= playerControlHandler.ShotPower * 0.2f;
+
+                // Уменьшаем размер игрока в зависимости от мощности выстрела
+                model.CurrentSize -= shotPower * 0.2f; 
                 UpdatePlayerSize();
             }
         }

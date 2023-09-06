@@ -107,11 +107,6 @@ MonoBehaviour:
   m_GameObject: {fileID: 3040593277700979878}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 363d021d9b0a4983884b9571a951820e, type: 3}
+  m_Script: {fileID: 11500000, guid: 70d163ad2a5a465fb89e9d38797d542b, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  mainBall: {fileID: 3040593277700979878}
-  childBallPrefab: {fileID: 3040593277700979878, guid: 10b62fba868f099418e2ee1e40654f0f, type: 3}
-  maxShrinkSize: 0.5
-  shrinkSpeed: 0.01
-  launchSpeed: 10
