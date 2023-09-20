@@ -28,7 +28,7 @@ namespace Code.Game
 			gameObject.layer = LayerMask.NameToLayer("PlayerBullet");
 			GetComponent<Renderer>().material.color = Color.yellow;
 			cachedRigidbody.velocity = Vector3.forward * speed;
-			infectionRadius = bulletSize * 2;
+			infectionRadius = bulletSize * 1.2f;
 			transform.localScale = new Vector3(bulletSize, bulletSize, bulletSize);
 		}
 

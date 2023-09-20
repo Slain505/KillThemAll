@@ -1,12 +1,7 @@
 namespace Code.Shared
 {
-	public class PopupStateModel<T, V> : PopupState<T>, IPopupModel<V> where V : IModel
+	public class PopupStateModel<T> : PopupState<T>
 	{
-		protected V model;
 		
-		public virtual void Setup(V m)
-		{
-			model = m;
-		}
 	}
 }

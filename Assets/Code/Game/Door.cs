@@ -1,4 +1,7 @@
 ﻿using System;
+using Code.Shared;
+using Code.UI;
+using Cysharp.Threading.Tasks;
 using UnityEngine;
 
 namespace Code.Game
@@ -9,10 +12,10 @@ namespace Code.Game
         
         private void OnTriggerEnter(Collider other)
         {
-            if (other.TryGetComponent<Player>(out var player))
-            {
-                Debug.Log("Player entered door.");
-            }
+            Debug.Log("Door collided with " + other.gameObject.name);
+            Game.Get<PopupManager>().Get<LevelWinPopup>();
+            Game.Get<PopupManager>().Open<LevelWinPopup>().Forget(); 
+            Time.timeScale = 0;
         }
     }
 }

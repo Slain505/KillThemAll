@@ -12,7 +12,7 @@ namespace Code.Game
         private float lastTimeShot;
         private float currentSize = 3f;
         private float maxSize = 5f;
-        private float minSize = 0.1f;
+        private float minSize = 1f;
         private float clickStartTime = 0f;
 
         private void Start()
@@ -35,7 +35,7 @@ namespace Code.Game
                 {
                     float sizeDecrease = timeSinceClickStartTime / 5f;
                     UpdatePlayerSize(sizeDecrease);
-                    Shoot(sizeDecrease);
+                    Shoot(sizeDecrease * 5f);
                     onShoot(this);
                 }
             }

@@ -1,5 +1,8 @@
 ﻿using System.Collections.Generic;
 using Code.Shared;
+using Code.UI;
+using Cysharp.Threading.Tasks;
+using Game.Model.Popups;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
@@ -66,7 +69,6 @@ namespace Code.Game
             var playerGo = Instantiate(playerPrefab, playerSpawnPoint.position, Quaternion.identity, transform);
             
             player = playerGo.GetComponent<Player>();
-            //player.Setup(new PlayerModel(playerConfig));
 
             player.onDie -= HandlePlayerDeath;
             player.onDie += HandlePlayerDeath;
@@ -137,7 +139,7 @@ namespace Code.Game
         {
             Debug.Log("Spawn road called.");
 
-            float distance = Vector3.Distance(playerSpawnPoint.position, doorSpawnPoint.position) / 10;
+            var distance = Vector3.Distance(playerSpawnPoint.position, doorSpawnPoint.position) / 10;
             Vector3 vectorDirection = (doorSpawnPoint.position - playerSpawnPoint.position);
             Vector3 middlePoint = playerSpawnPoint.position + vectorDirection / 2;
             
@@ -169,9 +171,9 @@ namespace Code.Game
         {
             Debug.Log("Player died.");
             Destroy(obj.gameObject);
-            Time.timeScale = 0;
+            //Time.timeScale = 0;
         }
-        
+
         private void HandlePlayerShoot(Player obj)
         {
             road.transform.parent.localScale = new Vector3(obj.transform.localScale.x, road.transform.parent.localScale.y, road.transform.parent.localScale.z);
